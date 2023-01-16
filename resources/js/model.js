@@ -41,9 +41,9 @@ class Namey {
         let center = size / 2;
         root.append("line")
             .attr("x1", offset_x - 1)
-            .attr("y1", offset_y + center + 0.75)
+            .attr("y1", offset_y + center)
             .attr("x2", offset_x + size + 1)
-            .attr("y2", offset_y + center + 0.75)
+            .attr("y2", offset_y + center)
             .attr("stroke-width", 1)
             .attr("stroke", "#AA7942");
 
@@ -53,7 +53,8 @@ class Namey {
             return (size / 25) * l;
         };
 
-        var colour_interpolation = d3.interpolateLab("#33691e", "#85CE86");
+        var mountain_interpolation = d3.interpolateLab("#33691e", "#85CE86");
+        var lake_interpolation = d3.interpolateLab("#0d47a1", "#4192d9");
         var dampen_index = function (i) {
             return (2 / (1 + Math.exp(-0.5 * i))) - 1;
         };
@@ -62,12 +63,19 @@ class Namey {
             let x1 = alpha_x(this.name[index - 1]);
             let x2 = alpha_x(this.name[index]);
             let x_delta = Math.abs(x2 - x1);
+            let mode = (((index - 1) % 2) * 2) - 1;
+            console.log("index " + index + ", mode " + mode);
             var path = d3.path();
-            path.moveTo(offset_x + x1, offset_y + center);
-            path.quadraticCurveTo(offset_x + Math.min(x1, x2) + (x_delta / 2), offset_y + center - ((x_delta * -((size - 2) / size)) + size + 2), offset_x + x2, offset_y + center);
+            path.moveTo(offset_x + x1, offset_y + center + (mode * 0.5));
+            path.quadraticCurveTo(offset_x + Math.min(x1, x2) + (x_delta / 2), offset_y + center + (mode * ((x_delta * -((size - 2) / size)) + size + 2)), offset_x + x2, offset_y + center + (mode * 0.5));
             path.closePath();
             //console.log("index " + index + ", dampen " + dampen_index(index - 1));
-            var colour = colour_interpolation((index - 1) / (this.name.length - 1));
+            var colour;
+            if (mode < 0) {
+                colour = mountain_interpolation((index - 1) / (this.name.length - 1));
+            } else {
+                colour = lake_interpolation((index - 1) / (this.name.length - 1));
+            }
 
             //if (index + 1 == this.name.length) {
             root.append("path")
